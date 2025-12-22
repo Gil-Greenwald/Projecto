@@ -2,7 +2,10 @@ import math
 from sys import argv
 
 
-def distance(vec1: tuple[float, ...], vec2: tuple[float, ...]) -> float:
+vec = tuple[float, ...]
+
+
+def distance(vec1: vec, vec2: vec) -> float:
     return math.sqrt(
         sum(
             (v1 - v2) ** 2
@@ -11,14 +14,14 @@ def distance(vec1: tuple[float, ...], vec2: tuple[float, ...]) -> float:
     )
 
 
-def closest_cluster_index(dp: tuple[float, ...], centroids: tuple[tuple[float, ...], ...]) -> int:
+def closest_cluster_index(dp: vec, centroids: tuple[vec, ...]) -> int:
     return min(
         range(len(centroids)),
         key=lambda i: distance(dp, centroids[i])
     )
 
 
-def update_centroid(cluster: list[tuple[float, ...]]) -> tuple[float, ...]:
+def update_centroid(cluster: list[vec]) -> vec:
     d = len(cluster[0])
 
     return tuple(
@@ -30,11 +33,11 @@ def update_centroid(cluster: list[tuple[float, ...]]) -> tuple[float, ...]:
     )
 
 
-def iteration(datapoints: tuple[tuple[float, ...], ...], centroids: tuple[tuple[float, ...], ...]) -> tuple[tuple[float, ...], ...]:
+def iteration(datapoints: tuple[vec, ...], centroids: tuple[vec, ...]) -> tuple[vec, ...]:
     # for each centroid, stores a list of closest datapoints.
     # assume datapoints[i] is closest to centroids[j], then dp_clusters[j] contains datapoints[i].
 
-    dp_clusters: list[list[tuple[float, ...]]] = [[] for _ in range(len(centroids))]
+    dp_clusters: list[list[vec]] = [[] for _ in range(len(centroids))]
 
     for dp in datapoints:
         cluster_index = closest_cluster_index(dp, centroids)
@@ -46,15 +49,15 @@ def iteration(datapoints: tuple[tuple[float, ...], ...], centroids: tuple[tuple[
     )
 
 
-def iteration_delta_smaller(prev_centroids: tuple[tuple[float, ...], ...], new_centroids: tuple[tuple[float, ...], ...], eps: float) -> bool:
+def iteration_delta_smaller(prev_centroids: tuple[vec, ...], new_centroids: tuple[vec, ...], eps: float) -> bool:
     return all(
         distance(prev_cent, new_cent) < eps
         for prev_cent, new_cent in zip(prev_centroids, new_centroids)
     )
 
 
-def k_means(datapoints: tuple[tuple[float, ...], ...], k: int, iter: int = 400, eps: float = 0.001) -> tuple[tuple[float, ...], ...]:
-    centroids: tuple[tuple[float, ...], ...] = datapoints[:k]
+def k_means(datapoints: tuple[vec, ...], k: int, iter: int = 400, eps: float = 0.001) -> tuple[vec, ...]:
+    centroids: tuple[vec, ...] = datapoints[:k]
 
     for _ in range(iter):
         new_centroids = iteration(datapoints, centroids)
