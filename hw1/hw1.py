@@ -98,13 +98,13 @@ def main():
         exit()
     
     if not argv[1].isdigit():  # K
-        print("An Error Has Occurred!")
+        print("Incorrect number of clusters!")
         exit()
     
     k = int(argv[1])
     
     if len(argv) == 4 and not argv[2].isdigit():  # iter
-        print("An Error Has Occurred!")
+        print("Incorrect maximum iteration!")
         exit()
     
     iter = int(argv[2]) if len(argv) == 4 else 400
