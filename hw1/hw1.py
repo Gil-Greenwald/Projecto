@@ -28,7 +28,7 @@ def update_centroid(cluster: list[vec]) -> vec:
         sum(
             dp[i]
             for dp in cluster
-        ) / d
+        ) / len(cluster)
         for i in range(d)
     )
 
@@ -58,8 +58,10 @@ def iteration_delta_smaller(prev_centroids: tuple[vec, ...], new_centroids: tupl
 
 def k_means(datapoints: tuple[vec, ...], k: int, iter: int = 400, eps: float = 0.001) -> tuple[vec, ...]:
     centroids: tuple[vec, ...] = datapoints[:k]
+    new_centroids = centroids
 
     for _ in range(iter):
+        centroids = new_centroids
         new_centroids = iteration(datapoints, centroids)
 
         if all(
@@ -68,7 +70,7 @@ def k_means(datapoints: tuple[vec, ...], k: int, iter: int = 400, eps: float = 0
         ):
             break
     
-    return centroids
+    return new_centroids
 
 
 def main():
@@ -109,7 +111,10 @@ def main():
         print("Incorrect maximum iteration!")
         exit()
 
-    print(k_means(datapoints, k, iter))
+    for cluster in k_means(datapoints, k, iter):
+        print(",".join(f"{c:.4f}" for c in cluster))
+    
+    print()
 
     # when returning the file, truncate floats to 4 decimal places
 
