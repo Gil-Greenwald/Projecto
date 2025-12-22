@@ -1,0 +1,8 @@
+.bash_history
+.dotnet
+.vscode
+.cache
+.local
+.mypy_cache
+.vscode-server
+.git
