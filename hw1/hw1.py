@@ -74,7 +74,7 @@ def k_means(datapoints: tuple[vec, ...], k: int, iter: int = 400, eps: float = 0
 
 
 def main():
-    if len(argv) != 4:
+    if len(argv) not in (3, 4):
         print("An Error Has Occurred!")
         exit()
     
@@ -84,14 +84,14 @@ def main():
     
     k = int(argv[1])
     
-    if not argv[2].isdigit():  # iter
+    if len(argv) == 4 and not argv[2].isdigit():  # iter
         print("An Error Has Occurred!")
         exit()
     
-    iter = int(argv[2])
+    iter = int(argv[2]) if len(argv) == 4 else 400
     
     try:
-        with open(argv[3], "r") as f:
+        with open(argv[-1], "r") as f:
             datapoints = tuple(
                 tuple(
                     float(dp)
