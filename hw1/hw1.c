@@ -42,6 +42,7 @@ struct DPE {  /*datapoint entry*/
 };
 typedef struct DPE DPE;
 
+
 struct Cluster {
     DPE *first_vector_head;
     DPE *last_vector_head;
@@ -133,30 +134,30 @@ double distance(DPE *vec1, DPE *vec2, int d) {
 }
 
 
-void add_vec_to_closest_cluster(DPE *vec, DPE *centroids, Cluster *clusters, int d) {
+void add_vec_to_closest_cluster(DPE *vec, DPE *centroid, Cluster *cluster, int d) {
     /*
     finds the closest centroid to vec, and appends it to the corresponding cluster.
     vec is the head of a vector,
-    centroids is the head of the first centroid,
-    clusters is a pointer to the first cluster,
+    centroid is the head of the first centroid,
+    cluster is a pointer to the first cluster,
     and d is the length of all the vectors.
     */
 
     int min_index = 0, i = 0;
     double min_distance = INFINITY;
 
-    while (centroids != NULL) {
+    while (centroid != NULL) {
         /*
         iterates over all vectors in centroids.
         for each one, calculates its distance from vec, and saves the minimal index.
         */
 
-        if (distance(vec, centroids, d) < min_distance)
-            min_distance = distance(vec, centroids, d);
+        if (distance(vec, centroid, d) < min_distance)
+            min_distance = distance(vec, centroid, d);
             min_index = i;
 
         i++;
-        centroids = centroids->next_dp;
+        centroid = centroid->next_dp;
     }
 
     for (i = 0; i < min_index; i++) {
@@ -164,27 +165,31 @@ void add_vec_to_closest_cluster(DPE *vec, DPE *centroids, Cluster *clusters, int
         finds the correct cluster based on min_index
         */
         
-        clusters = clusters->next_cluster;
+        cluster = cluster->next_cluster;
     }
 
-    create_vector(d, clusters->last_vector_head, vec);
+    create_vector(d, cluster->last_vector_head, vec);
+    
+    if (cluster->first_vector_head == NULL)
+        cluster->first_vector_head = cluster->last_vector_head;
 }
 
 
-DPE* update_centroid(DPE *cluster, int d) {
+DPE* update_centroid(DPE *cluster_first_vec, int d, DPE *prev_centroid) {
     /*
-    # based on a (linked) list of datapoints, calculates their centroid using the mean vector (see pdf for definition).
-    cluster is the first coordinate of the first datapoint of the cluster, like A_11.
+    based on a (linked) list of datapoints, calculates their centroid using the mean vector (see pdf for definition).
+    cluster_first_vec is the first coordinate of the first datapoint of the cluster, like A_11.
     d is the length of the vectors.
+    prev_centroid is the head of the previous centroid.
     not all the datapoints from the file are proccessed here, only a certain cluster.
     */
 
     double sum = 0.0;
     int i, num_of_vectors = 0;
 
-    DPE *cluster_dpe = cluster;
+    DPE *cluster_dpe = cluster_first_vec;
 
-    DPE *new_centroid_head = create_vector(d, NULL, NULL);
+    DPE *new_centroid_head = create_vector(d, prev_centroid, NULL);
     DPE *new_centroid_dpe = new_centroid_head;
 
     for (i = 0; i < d; i++) {
@@ -194,7 +199,7 @@ DPE* update_centroid(DPE *cluster, int d) {
         going over each the same coordinate of every datapoint.
         */
 
-        cluster_dpe = cluster;
+        cluster_dpe = cluster_first_vec;
         sum = 0.0;
         num_of_vectors = 0;
 
@@ -211,7 +216,7 @@ DPE* update_centroid(DPE *cluster, int d) {
 
         new_centroid_dpe->value = sum / num_of_vectors;
 
-        cluster = cluster->next_entry;
+        cluster_first_vec = cluster_first_vec->next_entry;
         new_centroid_dpe = new_centroid_dpe->next_entry;
     }
 
