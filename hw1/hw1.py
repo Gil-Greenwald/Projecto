@@ -33,8 +33,8 @@ def update_centroid(cluster: list[vec]) -> vec:
 
     return tuple(
         sum(
-            dp[i]
-            for dp in cluster
+            vector[i]
+            for vector in cluster
         ) / len(cluster)
         for i in range(d)
     )
@@ -42,27 +42,18 @@ def update_centroid(cluster: list[vec]) -> vec:
 
 def iteration(datapoints: tuple[vec, ...], centroids: tuple[vec, ...]) -> tuple[vec, ...]:
     # for each centroid, stores a list of its closest datapoints
-    # assume datapoints[i] is closest to centroids[j], then dp_clusters[j] contains datapoints[i]
+    # assume datapoints[i] is closest to centroids[j], then clusters[j] contains datapoints[i]
     # then calculates the centroids using update_centroid and returns all the updated centroids
 
-    dp_clusters: list[list[vec]] = [[] for _ in range(len(centroids))]
+    clusters: list[list[vec]] = [[] for _ in range(len(centroids))]
 
-    for dp in datapoints:
-        cluster_index = closest_cluster_index(dp, centroids)
-        dp_clusters[cluster_index].append(dp)
+    for vector in datapoints:
+        cluster_index = closest_cluster_index(vector, centroids)
+        clusters[cluster_index].append(vector)
     
     return tuple(
-        update_centroid(dp_clusters[j])
-        for j in range(len(dp_clusters))
-    )
-
-
-def iteration_delta_smaller(prev_centroids: tuple[vec, ...], new_centroids: tuple[vec, ...], eps: float) -> bool:
-    # checks whether all of the centroids have changed by less than eps, which means they have converged
-
-    return all(
-        distance(prev_cent, new_cent) < eps
-        for prev_cent, new_cent in zip(prev_centroids, new_centroids)
+        update_centroid(clusters[j])
+        for j in range(len(clusters))
     )
 
 
@@ -78,8 +69,8 @@ def k_means(datapoints: tuple[vec, ...], k: int, iter: int = 400, eps: float = 0
         new_centroids = iteration(datapoints, centroids)
 
         if all(
-                distance(prev_cent, new_cent) < eps
-                for prev_cent, new_cent in zip(centroids, new_centroids)
+            distance(prev_cent, new_cent) < eps
+            for prev_cent, new_cent in zip(centroids, new_centroids)
         ):
             break
     
@@ -91,7 +82,6 @@ def main():
     # input should contain the file name, K, iter and the input file
     # K should be an int, and satisfy 1 < K < N == number of rows in the input file
     # iter should be an int, and satisfy 1 < iter < 800
-
 
     if len(argv) not in (3, 4):
         print("An Error Has Occurred!")
