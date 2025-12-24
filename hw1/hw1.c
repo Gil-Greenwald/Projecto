@@ -111,6 +111,7 @@ DPE* create_vector(int d, DPE *prev_vec, DPE *original_vec) {
 double distance(DPE *vec1, DPE *vec2, int d) {
     /*
     calculates the distance of vec1 from vec2 based on the Pythagorean theorem (see pdf for definition).
+
     vec1 and vec2 are the first coordinates of datapoints, like A_i1, A_j1 in the matrix.
     d is the length of vec1 and vec2.
     */
@@ -134,29 +135,31 @@ double distance(DPE *vec1, DPE *vec2, int d) {
 }
 
 
-void add_vec_to_closest_cluster(DPE *vec, DPE *centroid, Cluster *cluster, int d) {
+void add_vec_to_closest_cluster(DPE *vec, DPE *centroid, Cluster *cluster, int d, int k) {
     /*
     finds the closest centroid to vec, and appends it to the corresponding cluster.
+
     vec is the head of a vector,
-    centroid is the head of the first centroid,
-    cluster is a pointer to the first cluster,
-    and d is the length of all the vectors.
+    centroid is the head of the first centroid.
+    cluster is a pointer to the first cluster.
+    d is the length of all the vectors.
+    k is the number of centroids/clusters.
     */
 
     int min_index = 0, i = 0;
-    double min_distance = INFINITY;
+    double min_distance = -1;
 
-    while (centroid != NULL) {
+    for (i = 0; i < k; i++) {
         /*
         iterates over all vectors in centroids.
         for each one, calculates its distance from vec, and saves the minimal index.
         */
 
-        if (distance(vec, centroid, d) < min_distance)
+        if ((distance(vec, centroid, d) < min_distance) || (min_distance == -1)) {
             min_distance = distance(vec, centroid, d);
             min_index = i;
+        }
 
-        i++;
         centroid = centroid->next_dp;
     }
 
@@ -178,6 +181,7 @@ void add_vec_to_closest_cluster(DPE *vec, DPE *centroid, Cluster *cluster, int d
 DPE* update_centroid(DPE *cluster_first_vec, int d, DPE *prev_centroid) {
     /*
     based on a (linked) list of datapoints, calculates their centroid using the mean vector (see pdf for definition).
+
     cluster_first_vec is the first coordinate of the first datapoint of the cluster, like A_11.
     d is the length of the vectors.
     prev_centroid is the head of the previous centroid.
@@ -224,20 +228,65 @@ DPE* update_centroid(DPE *cluster_first_vec, int d, DPE *prev_centroid) {
 }
 
 
-DPE* iteration(DPE *datapoints, DPE *centroids) {
+DPE* iteration(DPE *vec, DPE *centroids, int d, int k) {
     /*
-    for each centroid, stores a list of its closest datapoints.
-    assume datapoints[i] is closest to centroids[j], then dp_clusters[j] contains datapoints[i].
-    then calculates the centroids using update_centroid and returns all the updated centroids.
+    first, creates a linked-list of the new cenetroids.
+    then, for each vector in the given datapoints,
+    calls add_vec_to_closest_cluster and appends it to its cluster, based on the closest centroid.
+    finally, updates the first centroid and then all the following centroids.
+
+    vec is the head of the first datapoint.
+    centroids is the first centroid from the previous iteration.
+    d is the length of the vectors.
+    k is the number of centroids.
     */
 
+    Cluster *first_cluster = malloc(sizeof(Cluster));
+    Cluster *cluster = first_cluster;
+
+    DPE *first_new_centroid = NULL;
+    DPE *new_centroid = NULL;
+
+    int i;
+
+    for (i = 0; i < k; i++) {
+        /*
+        creates k empty clusters.
+        */
+
+        cluster->next_cluster = malloc(sizeof(Cluster));
+        cluster = cluster->next_cluster;
+    }
+
+    while (vec != NULL) {
+        /*
+        appends vec to its cluster.
+        */
+
+        add_vec_to_closest_cluster(vec, centroids, cluster, d, k);
+        vec = vec->next_dp;
+    }
+
+    cluster = first_cluster;
+
     /*
-    IDEA:
-    save a linked list of length k which will have, for each cluster, the last seen vector in this cluster.
-    go over all the vectors in the datapoints, and by getting the correct cluster index, go iteratively to the correct cluster and append the new vector
+    first updates the first centroid.
     */
 
-    return datapoints;
+    first_new_centroid = update_centroid(cluster->first_vector_head, d, NULL);
+    new_centroid = first_new_centroid;
+    cluster = cluster->next_cluster;
+
+    /*
+    and only after setting first_new_centroid, updates the rest.
+    */
+
+    for (i = 1; i < k; i++) {
+        new_centroid = update_centroid(cluster->first_vector_head, d, new_centroid);
+        cluster = cluster->next_cluster;
+    }
+
+    return first_new_centroid;
 }
 
 
