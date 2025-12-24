@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define EPS 0.001
+
 
 /*
 datapoints are stored like so:
@@ -105,6 +107,50 @@ DPE* create_vector(int d, DPE *prev_vec, DPE *original_vec) {
     }
 
     return head;
+}
+
+
+void free_dpe_matrix(DPE *vec_head) {
+    /*
+    frees the entire matrix which is accessible from vec_head.
+
+    vec_head is the head of the first vector in the matrix.
+    */
+    
+    DPE *dpe, *next_dpe, *next_vec_head;
+
+    while (vec_head != NULL) {
+        dpe = vec_head;
+        next_vec_head = vec_head->next_dp;
+
+        while (dpe != NULL) {
+            next_dpe = dpe->next_entry;
+            free(dpe);
+            dpe = next_dpe;
+        }
+
+        vec_head = next_vec_head;
+    }
+}
+
+
+void free_clusters(Cluster *cluster) {
+    /*
+    frees the entire clusters which are accessible from cluster.
+
+    cluster is the first cluster.
+    */
+
+    Cluster *next_cluster;
+
+    while (cluster != NULL) {
+        next_cluster = cluster->next_cluster;
+
+        free_dpe_matrix(cluster->first_vector_head);
+        free(cluster);
+
+        cluster = next_cluster;
+    }
 }
 
 
@@ -234,6 +280,7 @@ DPE* iteration(DPE *vec, DPE *centroids, int d, int k) {
     then, for each vector in the given datapoints,
     calls add_vec_to_closest_cluster and appends it to its cluster, based on the closest centroid.
     finally, updates the first centroid and then all the following centroids.
+    because we don't need to save the clusters, frees them at the end.
 
     vec is the head of the first datapoint.
     centroids is the first centroid from the previous iteration.
@@ -286,7 +333,64 @@ DPE* iteration(DPE *vec, DPE *centroids, int d, int k) {
         cluster = cluster->next_cluster;
     }
 
+    free_clusters(first_cluster);
+
     return first_new_centroid;
+}
+
+
+int are_all_centroid_deltas_less_than_epsilson(DPE *prev_centroid, DPE *new_centroid, int d, int k) {
+    int i;
+
+    for (i = 0; i < k; i++) {
+        if (distance(prev_centroid, new_centroid, d) >= EPS)
+            return 0;
+        
+        prev_centroid = prev_centroid->next_dp;
+        new_centroid = new_centroid->next_dp;
+    }
+
+    return 1;
+}
+
+
+DPE* k_means(DPE *datapoints, int d, int k, int iter) {
+    /*
+    the actual k-means algorithm
+    makes repeated iterations until convergence and updates the centroids
+    */
+
+    int i;
+
+    DPE *centroids, *new_centroids;
+    DPE *centroid_vec, *vec = datapoints;
+
+    /*
+    sets the first iteration to be the first k vectors.
+    */
+
+    centroid_vec = create_vector(d, NULL, vec);
+    centroids = centroid_vec;
+    new_centroids = centroids;
+
+    for (i = 1; i < k; i++) {
+        vec = vec->next_dp;
+        centroid_vec = create_vector(d, centroid_vec, vec);
+    }
+
+    /*
+    makes repeated iterations until convergence and updates the centroids.
+    */
+
+    for (i = 1; i < iter; i++) {
+        centroids = new_centroids;
+        new_centroids = iteration(datapoints, centroids, d, k);
+
+        if (are_all_centroid_deltas_less_than_epsilson(centroids, new_centroids, d, k) == 1)
+            break;
+    }
+
+    return new_centroids;
 }
 
 
