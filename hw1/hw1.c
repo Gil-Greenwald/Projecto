@@ -43,6 +43,7 @@ struct DPE {  /*datapoint entry*/
 typedef struct DPE DPE;
 
 struct Cluster {
+    DPE *first_vector_head;
     DPE *last_vector_head;
     struct Cluster *next_cluster;
 };
