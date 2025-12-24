@@ -68,7 +68,7 @@ DPE* create_vector(int d, DPE *prev_vec, DPE *original_vec) {
     int i;
 
     if (dpe == NULL)
-        return NULL;
+        exit(1);
     
     /*
     handles the head of the vectos first.
@@ -93,7 +93,7 @@ DPE* create_vector(int d, DPE *prev_vec, DPE *original_vec) {
         dpe = dpe->next_entry;
 
         if (dpe == NULL)
-            return NULL;
+            exit(1);
         
         if (original_vec != NULL) {
             dpe->value = original_vec->value;
@@ -400,5 +400,5 @@ int main() {
 
 
 /* compile with
-gcc -ansi -Wall -Wextra -Werror -pedantic-errors hw1.c -lm -o hw1
+gcc -ansi -Wall -Wextra -Werror -pedantic-errors hw1.c -lm -o kmeans
 */
