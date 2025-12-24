@@ -143,6 +143,7 @@ void add_vec_to_closest_cluster(DPE *vec, DPE *centroids, Cluster *clusters, int
     */
 
     int min_index = 0, i = 0;
+    double min_distance = INFINITY;
 
     while (centroids != NULL) {
         /*
@@ -150,7 +151,7 @@ void add_vec_to_closest_cluster(DPE *vec, DPE *centroids, Cluster *clusters, int
         for each one, calculates its distance from vec, and saves the minimal index.
         */
 
-        if (distance(vec, centroids, d) < min_index)
+        if (distance(vec, centroids, d) < min_distance)
             min_index = i;
 
         i++;
