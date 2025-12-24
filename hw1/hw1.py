@@ -138,5 +138,4 @@ def main():
     # when returning the file, truncate floats to 4 decimal places
 
 
-if __name__ == "__main__":
-    main()
+main()
