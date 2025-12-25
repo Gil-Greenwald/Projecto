@@ -61,7 +61,7 @@ DPE* create_vector(int d, DPE *prev_vec, DPE *original_vec) {
     if prev_vec is not NULL, assigns the created vector to be the next vector relative to prev_vec.
     if original_vec is not NULL, copies original_vec's values into the new vector.
     */
-
+    
     DPE *head = malloc(sizeof(DPE));
     DPE *dpe = head;
     
@@ -83,7 +83,7 @@ DPE* create_vector(int d, DPE *prev_vec, DPE *original_vec) {
         prev_vec->next_dp = dpe;
         prev_vec = prev_vec->next_entry;
     }
-
+    
     /*
     then all the entries that follow.
     */
@@ -105,7 +105,7 @@ DPE* create_vector(int d, DPE *prev_vec, DPE *original_vec) {
             prev_vec = prev_vec->next_entry;
         }
     }
-
+    
     return head;
 }
 
@@ -176,7 +176,7 @@ double distance(DPE *vec1, DPE *vec2, int d) {
         vec1 = vec1->next_entry;
         vec2 = vec2->next_entry;
     }
-
+    
     return sqrt(sum);
 }
 
@@ -208,7 +208,7 @@ void add_vec_to_closest_cluster(DPE *vec, DPE *centroid, Cluster *cluster, int d
 
         centroid = centroid->next_dp;
     }
-
+    
     for (i = 0; i < min_index; i++) {
         /*
         finds the correct cluster based on min_index
@@ -216,8 +216,8 @@ void add_vec_to_closest_cluster(DPE *vec, DPE *centroid, Cluster *cluster, int d
         
         cluster = cluster->next_cluster;
     }
-
-    create_vector(d, cluster->last_vector_head, vec);
+    
+    cluster->last_vector_head = create_vector(d, cluster->last_vector_head, vec);
     
     if (cluster->first_vector_head == NULL)
         cluster->first_vector_head = cluster->last_vector_head;
@@ -310,7 +310,7 @@ DPE* iteration(DPE *vec, DPE *centroids, int d, int k) {
         appends vec to its cluster.
         */
 
-        add_vec_to_closest_cluster(vec, centroids, cluster, d, k);
+        add_vec_to_closest_cluster(vec, centroids, first_cluster, d, k);
         vec = vec->next_dp;
     }
 
@@ -333,7 +333,7 @@ DPE* iteration(DPE *vec, DPE *centroids, int d, int k) {
         cluster = cluster->next_cluster;
     }
 
-    free_clusters(first_cluster);
+    /*free_clusters(first_cluster);*/
 
     return first_new_centroid;
 }
@@ -381,20 +381,153 @@ DPE* k_means(DPE *datapoints, int d, int k, int iter) {
     /*
     makes repeated iterations until convergence and updates the centroids.
     */
-
+    
     for (i = 1; i < iter; i++) {
         centroids = new_centroids;
         new_centroids = iteration(datapoints, centroids, d, k);
 
-        if (are_all_centroid_deltas_less_than_epsilson(centroids, new_centroids, d, k) == 1)
+        if (are_all_centroid_deltas_less_than_epsilson(centroids, new_centroids, d, k) == 1) {
+            free_dpe_matrix(centroids);
             break;
+        }
+        
+        /*free(centroids);*/
+        /*free_dpe_matrix(centroids);*/
     }
 
     return new_centroids;
 }
 
 
-int main() {
+int get_line_length(char *line) {
+    int i = 0, len = 1;
+
+    while (line[i]) {
+        if (line[i] == ',')
+            len++;
+        
+        i++;
+    }
+
+    return len;
+}
+
+
+DPE* get_vector_from_line(char *line, int d, DPE *prev_vec) {
+    int i;
+
+    DPE *head = create_vector(d, prev_vec, NULL), *vec;
+    vec = head;
+
+    for (i = 0; i < d; i++) {
+        vec->value = strtod(line, &line);
+        line++;
+        vec = vec->next_entry;
+    }
+
+    return head;
+}
+
+
+int main(int argc, char *argv[]) {
+    long k, iter;
+    char *endptr, buffer[1024];
+    int d, n = 1, i;
+    DPE *first_vector, *vec, *centroid_head, *centroid_dpe;
+
+    if (argc != 2 && argc != 3) {
+        printf("An Error Has Occurred!\n");
+        exit(1);
+    }
+
+    k = strtod(argv[1], &endptr);
+
+    if (*endptr != '\0') {
+        printf("Incorrect number of clusters!\n");
+        exit(1);
+    }
+
+    if (argc == 3) {
+        iter = strtol(argv[2], &endptr, 10);
+
+        if (*endptr != '\0') {
+            printf("Incorrect maximum iteration!\n");
+            exit(1);
+        }
+    } else {
+        iter = 400;
+    }
+
+    /*
+    reading the file.
+    */
+
+    /*
+    get first line and d.
+    */
+
+    fgets(buffer, sizeof(buffer), stdin);
+
+    d = get_line_length(buffer);
+    first_vector = get_vector_from_line(buffer, d, NULL);
+    vec = first_vector;
+
+    while (fgets(buffer, sizeof(buffer), stdin) != NULL) {
+        vec = get_vector_from_line(buffer, d, vec);
+        n++;
+    }
+
+    /*
+            FOR DEBUG:
+
+            printf("\nd=%d, k=%lu iter=%lu n=%d\n", d, k, iter, n);
+
+            while (vec) {
+                printf("%f,", vec->value);
+                vec = vec->next_entry;
+            }
+    */
+
+    /*
+    validate k
+    */
+
+    if (k <= 1 || k >= n) {
+        printf("Incorrect number of clusters!\n");
+        exit(1);
+    }
+
+    /*
+    validate iter
+    */
+
+    if (k <= 1 || k >= 800) {
+        printf("Incorrect maximum iteration!\n");
+        exit(1);
+    }
+    
+    centroid_head = k_means(first_vector, d, k, iter);
+
+    for (i = 0; i < k; i++) {
+        centroid_dpe = centroid_head;
+
+        while (centroid_dpe != NULL) {
+            if (centroid_dpe != centroid_head)
+                printf(",");
+            
+            printf("%.4f", centroid_dpe->value);
+
+            centroid_dpe = centroid_dpe->next_entry;
+        }
+
+        printf("\n");
+
+        centroid_head = centroid_head->next_dp;
+    }
+    
+
+
+
     return 0;
 }
 
