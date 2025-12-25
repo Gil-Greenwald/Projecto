@@ -1,5 +1,5 @@
 import math
-from sys import argv
+from sys import argv, stdin
 
 
 vec = tuple[float, ...]
@@ -79,11 +79,11 @@ def k_means(datapoints: tuple[vec, ...], k: int, iter: int = 400, eps: float = 0
 
 def main():
     # checks whether the input is valid:
-    # input should contain the file name, K, iter and the input file
+    # input should contain the file name, K, iter, the stupid "<" and the input file
     # K should be an int, and satisfy 1 < K < N == number of rows in the input file
     # iter should be an int, and satisfy 1 < iter < 800
 
-    if len(argv) not in (3, 4):
+    if len(argv) not in (2, 3):
         print("An Error Has Occurred!")
         exit()
     
@@ -93,21 +93,20 @@ def main():
     
     k = int(argv[1])
     
-    if len(argv) == 4 and not argv[2].isdigit():  # iter
+    if len(argv) == 3 and not argv[2].isdigit():  # iter
         print("Incorrect maximum iteration!")
         exit()
     
-    iter = int(argv[2]) if len(argv) == 4 else 400
+    iter = int(argv[2]) if len(argv) == 3 else 400
     
     try:
-        with open(argv[-1], "r") as f:
-            datapoints = tuple(
-                tuple(
-                    float(dp)
-                    for dp in row.split(",")
-                )
-                for row in f.readlines()
+        datapoints = tuple(
+            tuple(
+                float(dp)
+                for dp in row.split(",")
             )
+            for row in stdin.readlines()
+        )
     except Exception:
         print("An Error Has Occurred!")
         exit()
