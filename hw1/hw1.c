@@ -62,7 +62,7 @@ DPE* create_vector(int d, DPE *prev_vec, DPE *original_vec) {
     if original_vec is not NULL, copies original_vec's values into the new vector.
     */
     
-    DPE *head = malloc(sizeof(DPE));
+    DPE *head = calloc(1, sizeof(DPE));
     DPE *dpe = head;
     
     int i;
@@ -89,7 +89,7 @@ DPE* create_vector(int d, DPE *prev_vec, DPE *original_vec) {
     */
 
     for (i = 1; i < d; i++) {
-        dpe->next_entry = malloc(sizeof(DPE));
+        dpe->next_entry = calloc(1, sizeof(DPE));
         dpe = dpe->next_entry;
 
         if (dpe == NULL)
@@ -288,7 +288,7 @@ DPE* iteration(DPE *vec, DPE *centroids, int d, int k) {
     k is the number of centroids.
     */
 
-    Cluster *first_cluster = malloc(sizeof(Cluster));
+    Cluster *first_cluster = calloc(1, sizeof(Cluster));
     Cluster *cluster = first_cluster;
 
     DPE *first_new_centroid = NULL;
@@ -301,7 +301,7 @@ DPE* iteration(DPE *vec, DPE *centroids, int d, int k) {
         creates k empty clusters.
         */
 
-        cluster->next_cluster = malloc(sizeof(Cluster));
+        cluster->next_cluster = calloc(1, sizeof(Cluster));
         cluster = cluster->next_cluster;
     }
 
