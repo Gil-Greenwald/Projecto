@@ -61,7 +61,7 @@ DPE* create_vector(int d, DPE *prev_vec, DPE *original_vec) {
     if prev_vec is not NULL, assigns the created vector to be the next vector relative to prev_vec.
     if original_vec is not NULL, copies original_vec's values into the new vector.
     */
-    
+
     DPE *head = calloc(1, sizeof(DPE));
     DPE *dpe = head;
     
@@ -333,7 +333,7 @@ DPE* iteration(DPE *vec, DPE *centroids, int d, int k) {
         cluster = cluster->next_cluster;
     }
 
-    /*free_clusters(first_cluster);*/
+    free_clusters(first_cluster);
 
     return first_new_centroid;
 }
@@ -391,8 +391,7 @@ DPE* k_means(DPE *datapoints, int d, int k, int iter) {
             break;
         }
         
-        /*free(centroids);*/
-        /*free_dpe_matrix(centroids);*/
+        free_dpe_matrix(centroids);
     }
 
     return new_centroids;
@@ -433,7 +432,7 @@ int main(int argc, char *argv[]) {
     long k, iter;
     char *endptr, buffer[1024];
     int d, n = 1, i;
-    DPE *first_vector, *vec, *centroid_head, *centroid_dpe;
+    DPE *first_vector, *vec, *first_centroid_head, *centroid_head, *centroid_dpe;
 
     if (argc != 2 && argc != 3) {
         printf("An Error Has Occurred!\n");
@@ -506,7 +505,10 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     
-    centroid_head = k_means(first_vector, d, k, iter);
+    first_centroid_head = k_means(first_vector, d, k, iter);
+    centroid_head = first_centroid_head;
+
+    free_dpe_matrix(first_vector);
 
     for (i = 0; i < k; i++) {
         centroid_dpe = centroid_head;
@@ -525,8 +527,7 @@ int main(int argc, char *argv[]) {
         centroid_head = centroid_head->next_dp;
     }
     
-
-
+    free_dpe_matrix(first_centroid_head);
 
     return 0;
 }
