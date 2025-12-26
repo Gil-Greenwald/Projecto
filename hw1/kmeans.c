@@ -439,7 +439,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    k = strtod(argv[1], &endptr);
+    k = strtol(argv[1], &endptr, 10);
 
     if (*endptr != '\0') {
         printf("Incorrect number of clusters!\n");
@@ -500,7 +500,7 @@ int main(int argc, char *argv[]) {
     validate iter
     */
 
-    if (k <= 1 || k >= 800) {
+    if (iter <= 1 || iter >= 800) {
         printf("Incorrect maximum iteration!\n");
         exit(1);
     }

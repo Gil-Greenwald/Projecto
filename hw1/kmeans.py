@@ -85,17 +85,17 @@ def main():
 
     if len(argv) not in (2, 3):
         print("An Error Has Occurred!")
-        exit()
+        exit(1)
     
     if not argv[1].isdigit():  # K
         print("Incorrect number of clusters!")
-        exit()
+        exit(1)
     
     k = int(argv[1])
     
     if len(argv) == 3 and not argv[2].isdigit():  # iter
         print("Incorrect maximum iteration!")
-        exit()
+        exit(1)
     
     iter = int(argv[2]) if len(argv) == 3 else 400
     
@@ -109,15 +109,15 @@ def main():
         )
     except Exception:
         print("An Error Has Occurred!")
-        exit()
+        exit(1)
     
     if not (1 < k < len(datapoints)):
         print("Incorrect number of clusters!")
-        exit()
+        exit(1)
     
     if not (1 < iter < 800):
         print("Incorrect maximum iteration!")
-        exit()
+        exit(1)
 
     for cluster in k_means(datapoints, k, iter):
         print(",".join(f"{c:.4f}" for c in cluster))
